@@ -40,3 +40,24 @@
 - โครง PVC/บ่อผ้าใบต้องผ่านการยืนยันความแข็งแรงก่อนใช้งานจริง
 - เพื่อความปลอดภัย ควรเปิด Supabase Database backups ตามแผนที่รองรับและส่งออก CSV เป็นระยะ
 - เจ้าของควรทดสอบ SQL/RLS กับบัญชีพ่อและบัญชีอื่นที่ไม่ได้รับเชิญ ก่อนใช้ข้อมูลจริง
+
+## V2.1 — 19 October 2026
+
+- โหลดรายการแบบแบ่งหน้าและกรองรอบที่ฐานข้อมูล ป้องกันยอดสะสมขาดเมื่อเกิน 1,000 รายการ
+- เรียงตามวันที่รายการก่อนเวลาบันทึก และใช้วันที่ประเทศไทย
+- ป้องกันการกดบันทึกซ้ำระหว่างรอ และแจ้งแยกเมื่อบันทึกสำเร็จแต่รีโหลดล้มเหลว
+- ปฏิเสธ secret/service_role key, ป้องกันสูตรอันตรายใน CSV, ตรวจจำนวนปลาเป็นจำนวนเต็ม
+- นำเข้า V1 ด้วยคำขอเดียวเพื่อให้สำเร็จหรือยกเลิกทั้งชุด ตรวจวันที่ ตัวเลข และรายการซ้ำก่อนส่ง (การตรวจซ้ำฝั่งเว็บไม่รับประกันกรณีหลายเครื่องนำเข้าพร้อมกัน)
+- แสดงจำนวนปลาตาย/ขายในประวัติ และสถานะอัปเดตล่าสุด
+
+### Development and release
+
+Run `node --test tests/regression.cjs` with Node.js 22 or newer before publishing. Commit changes to `main`; the existing GitHub Pages branch deployment publishes the root `index.html`. Check the Pages Actions run and verify the live version label. No manual file upload is needed.
+
+**Data safety:** Keep the current Supabase project, localStorage configuration keys, Auth, tables and RLS. Updating the static site does not require running `supabase.sql` again. Never run migrations, reset data, change RLS or execute production writes during testing without checking the current database and obtaining the owner's approval. The SQL file is original setup, not a rerunnable migration. This release does not modify it.
+
+Regression tests use mocks and do not access production Supabase. Live authentication, cross-account RLS and actual database configuration require a separately authorized test environment/session; repository code alone cannot verify the deployed database policies. Roll back application code through a new Git commit reverting the release; do not reset or restore the database for a frontend rollback.
+
+## V2.2 — Centered mobile menu
+
+The first signed-in screen is a centered menu with large cards for daily records, overview, water/filter care, history, and owner management. Phone layouts use two columns; larger screens use three. Each section has a sticky return-to-menu button, a clear heading, keyboard focus styling, and screen-reader-friendly navigation. Caregivers do not see the owner card. This is a frontend-only change and requires no database migration.
